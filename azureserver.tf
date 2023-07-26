@@ -6,7 +6,7 @@ provider "azurerm" {
 }
 
 variable "prefix" {
-  type = string
+  type    = string
   default = "Prod"
 }
 
@@ -39,53 +39,53 @@ resource "azurerm_subnet" "internal" {
 }
 
 resource "azurerm_public_ip" "publicip" {
-  name                         = "${var.prefix}-TFPublicIP"
-  location                     = azurerm_resource_group.main.location
-  resource_group_name          = azurerm_resource_group.main.name
-  allocation_method            = "Static"
+  name                = "${var.prefix}-TFPublicIP"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+  allocation_method   = "Static"
 }
 
 
 resource "azurerm_network_security_group" "myterraformnsg" {
-    name                = "${var.prefix}-myNetworkSecurityGroup"
-    location            = azurerm_resource_group.main.location
-    resource_group_name = azurerm_resource_group.main.name
-    
-    security_rule {
-        name                       = "SSH"
-        priority                   = 300
-        direction                  = "Inbound"
-        access                     = "Allow"
-        protocol                   = "Tcp"
-        source_port_range          = "*"
-        destination_port_range     = "22"
-        source_address_prefix      = "*"
-        destination_address_prefix = "*"
-    }
-    
-#    security_rule {
-#        name                       = "RDP"
-#        priority                   = 300
-#        direction                  = "Inbound"
-#        access                     = "Allow"
-#        protocol                   = "Tcp"
-#        source_port_range          = "*"
-#        destination_port_range     = "3389"
-#        source_address_prefix      = "*"
-#        destination_address_prefix = "*"
-#    }
+  name                = "${var.prefix}-myNetworkSecurityGroup"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+
+  security_rule {
+    name                       = "SSH"
+    priority                   = 300
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "22"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  #    security_rule {
+  #        name                       = "RDP"
+  #        priority                   = 300
+  #        direction                  = "Inbound"
+  #        access                     = "Allow"
+  #        protocol                   = "Tcp"
+  #        source_port_range          = "*"
+  #        destination_port_range     = "3389"
+  #        source_address_prefix      = "*"
+  #        destination_address_prefix = "*"
+  #    }
 
 
-    tags = {
-        environment = "Terraform Demo"
-    }
+  tags = {
+    environment = "Terraform Demo"
+  }
 }
 
 resource "azurerm_network_interface" "main" {
-  name                = "${var.prefix}-nic"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-  network_security_group_id   = azurerm_network_security_group.myterraformnsg.id
+  name                      = "${var.prefix}-nic"
+  location                  = azurerm_resource_group.main.location
+  resource_group_name       = azurerm_resource_group.main.name
+  network_security_group_id = azurerm_network_security_group.myterraformnsg.id
 
   ip_configuration {
     name                          = "testconfiguration1"
@@ -114,22 +114,22 @@ resource "azurerm_virtual_machine" "main" {
   network_interface_ids = [azurerm_network_interface.main.id]
   vm_size               = "Standard_DS1_v2"
 
-  delete_os_disk_on_termination = true
+  delete_os_disk_on_termination    = true
   delete_data_disks_on_termination = true
 
   storage_image_reference {
     publisher = "Canonical"
     offer     = "UbuntuServer"
-    sku       = lookup("${var.sku}", "${var.prefix}") 
+    sku       = lookup("${var.sku}", "${var.prefix}")
     version   = "latest"
   }
 
-#  storage_image_reference {
-#    publisher = "MicrosoftWindowsServer"
-#    offer     = "WindowsServer"
-#    sku       = "2016-Datacenter-Server-Core"
-#    version   = "latest"
-#  }
+  #  storage_image_reference {
+  #    publisher = "MicrosoftWindowsServer"
+  #    offer     = "WindowsServer"
+  #    sku       = "2016-Datacenter-Server-Core"
+  #    version   = "latest"
+  #  }
 
   storage_os_disk {
     name              = "myosdisk1"
@@ -148,20 +148,20 @@ resource "azurerm_virtual_machine" "main" {
     disable_password_authentication = false
   }
 
-#  os_profile_windows_config {
-#    enable_automatic_upgrades = false
-#  }
+  #  os_profile_windows_config {
+  #    enable_automatic_upgrades = false
+  #  }
 
   provisioner "remote-exec" {
     connection {
-      type = "ssh"
-      host = azurerm_public_ip.publicip.ip_address
-      user = "testadmin"
+      type     = "ssh"
+      host     = azurerm_public_ip.publicip.ip_address
+      user     = "testadmin"
       password = "Password1234!"
     }
-    
+
     inline = [
-    "sudo mkdir /var/testing"
+      "sudo mkdir /var/testing"
     ]
   }
   tags = {
@@ -170,6 +170,6 @@ resource "azurerm_virtual_machine" "main" {
 }
 
 output "ip" {
-  value = azurerm_public_ip.publicip.ip_address
+  value       = azurerm_public_ip.publicip.ip_address
   description = "The public IP for Virtual Machine"
 }
